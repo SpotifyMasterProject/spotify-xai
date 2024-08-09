@@ -1,11 +1,7 @@
-<script setup lang="ts">
-import { ref } from 'vue';
-const hover = ref(false);
-</script>
-
 <template>
-  <button class="start-blend" @mouseover="hover = true" @mouseleave="hover=false">
-  Start Blend
+  <button
+    class="start-blend">
+    Start Blend
   </button>
 </template>
 

@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import LandingView from '@/views/LandingView.vue'
 import {useAuthStore} from '@/stores/auth'
 import WebsocketView from '@/views/WebsocketView.vue'
+import HostSessionView from '@/views/HostSessionView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -30,6 +31,12 @@ const router = createRouter({
       path: '/websockets',
       name: 'websockets',
       component: WebsocketView
+    },
+    {
+      path: '/session',
+      name: 'session',
+      component: () => HostSessionView,
+      /* meta: { requiresAuth: true } */
     },
   ]
 })
