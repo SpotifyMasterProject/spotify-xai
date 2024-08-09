@@ -50,7 +50,6 @@ a,
   box-sizing: border-box;
   flex-grow: 1;
   height: calc(100vh - 150px);
-
 }
 
 @media (max-height: 830px) {
@@ -98,6 +97,7 @@ a,
   outline: none;
   width: 100%;
   box-sizing: border-box;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 .type2 .search-bar-background{
   position: absolute;
@@ -108,6 +108,10 @@ a,
   width:350px;
   height:60px;
   box-sizing: border-box;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+.type2 .search-bar:hover {
+  background-color: #141414;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 .type2 .logo-nav-container{
@@ -121,7 +125,7 @@ a,
 }
 .type2 .middle{
   background-color: var(--backcore-color1);
-  flex-grow: 2;
+  flex-grow: 1;
   margin: 0 20px 20px;
   padding: 20px;
   display: flex;
@@ -130,21 +134,65 @@ a,
   box-sizing: border-box;
   border-radius: 18px;
   width: calc(100% - 40px);
+  transition: flex-grow 0.5s ease;
 }
-
+.type2 .middle. expanded{
+  flex-grow: 2;
+}
 .type2 .previously-played{
   background-color: var(--backcore-color1);
-  height: 20vh;
   margin: 0 20px 20px;
   padding: 20px;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
   overflow-y: auto;
   box-sizing: border-box;
   border-radius: 18px;
   width: calc(100% - 40px);
+  text-align: left;
+  color: #FFFFFF;
+  transition: all 0.5s ease;
+  max-height: 23vh;
 }
+type2. previously-played.minimized{
+  height: auto;
+}
+.type2 .previously-played .header-container {
+  display: flex;
+  flex-direction: row;  /* Aligns the header and button horizontally */
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+}
+.type2 .previously-played.minimized .header-container {
+  padding-bottom: 0; /* No padding when minimized */
+}
+.type2 .previously-played:not(.minimized) .header-container {
+  padding-bottom: 10px; /* Adds space between the header/button and the table when shown */
+}
+.type2 .previously-played h3 {
+  margin: 0;
+  font-size:16px;
+  width: 100%;
+}
+.type2 .previously-played button {
+  padding: 8px 16px;
+  background-color: #6BA149;
+  color: #D9D9D9;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+.type2 .previously-played button:hover {
+  background-color: #6AA834;
+  transform: scale(1.05); /* Slightly enlarge the button on hover */
+}
+
 @media(max-width: 900px){
   .type2 .search-bar,
   .type2 .search-bar-background{
