@@ -22,6 +22,10 @@
   --button-disabled-font-color: #c4c4c4;
 
   --overlay-background: #000000;
+
+  --p-drawer-background: var(--overlay-background);
+  --p-drawer-content-padding: 20px;
+  --p-drawer-header-padding: 20px;
 }
 
 /* semantic color variables for this project */

@@ -17,8 +17,9 @@ import StartBlendButton from "@/components/StartBlendButton.vue";
 import PlaylistCreator from "@/components/PlaylistCreator.vue";
 import MobileMainViz from "@/components/MobileMainViz.vue";
 import { HostSession } from "@/types/Session";
+import { SessionMessageType } from "@/types/SessionMessage";
 import { sessionService } from "@/services/sessionService";
-import SessionWebsocketService from "@/services/sessionWebsocketService";
+import { SessionWebsocketService } from "@/services/sessionWebsocketService";
 
 const showPreviouslyPlayed = ref(false);
 const showAddMoreSongPopup = ref(false);
@@ -48,6 +49,8 @@ const router = useRouter();
 const route = useRoute();
 
 const sessions = ref<Session[]>([]);
+const settingsVisible = ref(false);
+const sessionEnded = ref(false);
 
 const authStore = useAuthStore();
 const isHost = authStore.user?.isHost ?? false;
@@ -56,8 +59,17 @@ const loading = ref(true);
 const sessionSocket = new SessionWebsocketService();
 
 // TODO: Handle websocket messages.
-const handleSessionMessages = (message) => {
-  console.log(message);
+const handleSessionMessages = (sessionMessage) => {
+  switch (sessionMessage.type) {
+    case SessionMessageType.GUEST_ADDED:
+      sessions.value[selectedSessionIndex.value].guests[sessionMessage.guest.id] = sessionMessage.guest;
+      break;
+    case SessionMessageType.GUEST_REMOVED:
+      delete sessions.value[selectedSessionIndex.value].guests[sessionMessage.guestId];
+      break;
+    default:
+      break;
+  }
 };
 
 onMounted(async () => {
@@ -78,8 +90,7 @@ onMounted(async () => {
     sessions.value = [await sessionService.getSessionById(sessionId)];
     loading.value = false;
   } catch (error) {
-    // We redirect users to landing page, if we have any errors.
-    router.push({name: 'landing'});
+    errorMessage.value = "Could not find session. Please try to join again."
   }
 });
 const selectedSessionIndex = ref(0);
@@ -100,8 +111,10 @@ const createNewSessionFlow = ref(false);
 const runningSession = ref();
 
 const startSession = async (session) => {
-  sessions.value = [await sessionService.createNewSession(session), ...sessions.value];
-  sessionSocket.connect(session.sessionId, handleSessionMessages);
+  const createdSession = await sessionService.createNewSession(session);
+  sessionSocket.connect(createdSession.id, handleSessionMessages);
+
+  sessions.value = [createdSession, ...sessions.value];
 
   createNewSessionFlow.value = false;
   selectedSessionIndex.value = 0;
@@ -124,12 +137,26 @@ const addSongs = (songs) => {
     ];
   }
 };
+const showSettings = () => {
+  settingsVisible.value = true;
+};
+
+const removeGuest = async (guestId) => {
+  await sessionService.removeGuest(currentSession.value.id, guestId);
+};
+
+const endSession = async () => {
+  await sessionService.endSession(currentSession.value.id);
+  settingsVisible.value = false;
+  sessions.value[selectedSessionIndex.value].isRunning = false;
+};
+
 </script>
 
 <template>
   <div class="type2">
     <header>
-      <div class="function-icon-container">
+      <div class="function-icon-container" v-if="currentSession?.isRunning">
         <Button icon="pi pi-search" severity="success" text raised rounded aria-label="Search" @click="toggleAddMoreSongPopup" />
       </div>
       <div class="logo-nav-container">
@@ -138,7 +165,7 @@ const addSongs = (songs) => {
           <Navigation/>
         </nav>
       </div>
-      <i v-if="isHost" class="settings-icon pi pi-cog"></i>
+      <i v-if="isHost && currentSession?.isRunning" class="settings-icon pi pi-cog" @click="showSettings()"></i>
     </header>
     <div class="middle" v-if="!loading">
       <div v-if="errorMessage" class="error">
@@ -153,10 +180,10 @@ const addSongs = (songs) => {
           <div> i </div>
         </div>
         <MainVisualization v-if="isHost" :session="currentSession" />
-        <MobileMainViz v-if="!isHost"/>
+        <MobileMainViz v-if="!isHost" :sessionId="currentSession.id" />
       </template>
     </div>
-    <div v-if="currentSession" class="footer-section">
+    <div v-if="currentSession && currentSession.isRunning" class="footer-section">
       <div
         class="previously-played"
         :class="{ minimized: !showPreviouslyPlayed }"
@@ -195,6 +222,19 @@ const addSongs = (songs) => {
           @songsSelected="(songs) => addSongs(songs)" />
       </div>
     </div>
+    <Sidebar v-model:visible="settingsVisible" header="Settings" :unstyled="false">
+       <h3>Guests</h3>
+       <div class="guests-container">
+        <div v-for="guest in currentSession.guests" class="guest" :key="currentSession.guests.length">
+          {{guest.username}}
+          <i class="delete-guest-icon pi pi-trash" @click="removeGuest(guest.id)"/>
+        </div>
+      </div>
+
+       <button class="end-session-button" @click="endSession()">
+        End Session
+       </button>
+    </Sidebar>
   </div>
 </template>
 
@@ -365,5 +405,31 @@ const addSongs = (songs) => {
     margin-top: 0;
     padding-top: 0;
   }
+}
+.guest {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.delete-guest-icon {
+  cursor: pointer;
+}
+.end-session-button {
+  position: absolute;
+  font-size: 16px;
+  background-color: var(--logo-highlight-color);
+  border-radius: 12px;
+  border: none;
+  padding: 8px 20px;
+  cursor: pointer;
+  font-weight: bold;
+  color: white;
+}
+.guests-container {
+  height: 60%;
+  overflow: scroll;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 </style>

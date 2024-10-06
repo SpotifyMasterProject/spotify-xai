@@ -8,7 +8,7 @@ export const userService = {
             const authStore = useAuthStore();
 
             authStore.user = {
-                ...authStore.user,
+                isHost: authStore.user.isHost,
                 ...response.data
             };
         })

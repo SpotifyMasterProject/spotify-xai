@@ -14,6 +14,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jwt import InvalidTokenError
 from typing import Annotated
 from fastapi import FastAPI, Depends, HTTPException, status, WebSocket, WebSocketDisconnect
+from fastapi.websockets import WebSocketState 
 from models.user import User, SpotifyUser
 from models.token import Token, SpotifyToken
 from models.session import Session
@@ -170,11 +171,11 @@ class Service:
         session = await self.get_session(session_id)
 
         if guest.id not in session.guests:
-            session.guests.append(guest.id)
+            session.guests[guest.id] = guest
             await self.repo.set_session(session)
             guest.sessions.append(session.id)
             await self.repo.set_user(guest)
-            await manager.publish(channel=session.id, message=f"Guest {guest_id} has joined the session")
+            await manager.publish(channel=session.id, message=f"Guest {guest_id}:{guest.username} has joined the session")
         return session
 
     async def get_song(self, song_id: str) -> Song:
@@ -215,7 +216,7 @@ class Service:
             self.verify_host_of_session(host_id, session)
 
         self.verify_guest_of_session(guest_id, session)
-        session.guests.remove(guest.id)
+        del session.guests[guest.id]
         await self.repo.set_session(session)
         guest.sessions.remove(session.id)
         await self.repo.set_user(guest)
@@ -291,6 +292,7 @@ class Service:
     async def establish_ws_connection_to_channel_by_session_id(websocket: WebSocket, session_id: str) -> None:
         session_connections =  manager.active_connections.get(session_id, set())
         session_connections.add(websocket)
+        manager.active_connections[session_id] = session_connections
         async with manager.subscribe(channel=session_id) as subscriber:
             try:
                 async for event in subscriber:
@@ -300,8 +302,14 @@ class Service:
 
     @staticmethod
     async def end_all_ws_connections_to_channel_by_session_id(session_id: str) -> None:
+        if session_id not in manager.active_connections:
+            return
+
         for websocket in manager.active_connections[session_id]:
-            await websocket.close(code=1000, reason='Session ended')
+            try:
+                await websocket.close(code=1000, reason='Session ended')
+            except WebSocketDisconnect:
+                pass
         del manager.active_connections[session_id]
 
     async def end_session(self, host_id: str, session_id: str):
@@ -309,9 +317,11 @@ class Service:
         session = await self.get_session(session_id)
         self.verify_host_of_session(host_id, session)
         host.sessions.remove(session.id)
+        await self.repo.set_user(host)
         for guest_id in session.guests:
             guest = await self.get_user(guest_id)
             guest.sessions.remove(session.id)
+            await self.repo.set_user(guest)
         await self.end_all_ws_connections_to_channel_by_session_id(session_id)
         await self.repo.delete_session_by_id(session_id)
         # TODO: create and return session artifact

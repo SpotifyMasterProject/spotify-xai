@@ -6,7 +6,7 @@ export class Session {
     name: string
     hostName: string
     inviteLink: string
-    guests: User[]
+    guests: {[key: string]: User}
     playlist: Song[]
     creationDate: Date
     isRunning: boolean
@@ -16,7 +16,7 @@ export class Session {
         name: string
         hostName: string
         inviteLink: string
-        guests: User[]
+        guests:  {[key: string]: User}
         playlistName: string
         playlist: Song[]
         creationDate: Date
@@ -29,7 +29,7 @@ export class Session {
         this.guests = data.guests
         this.playlist = data.playlist
         this.creationDate = data.creationDate
-        this.isRunning = data.isRunning ?? false
+        this.isRunning = data.isRunning ?? true
     }
 }
 

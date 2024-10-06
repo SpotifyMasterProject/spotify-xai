@@ -2,6 +2,16 @@
 import Flower from "@/components/Flower.vue";
 import {SongFeatureCategory} from '@/types/SongFeature';
 import {ref, onMounted, onUnmounted} from 'vue';
+import {useAuthStore} from "@/stores/auth";
+import {sessionService} from "@/services/sessionService";
+import {SessionWebsocketService} from "@/services/sessionWebsocketService";
+import { SessionMessageType } from "@/types/SessionMessage";
+
+const sessionSocket = new SessionWebsocketService();
+
+const props = defineProps<{
+  sessionId: string,
+}>();
 
 const songList = ref([
   { title: "Baby Powder", artist: "Jenevieve", features: [
@@ -32,6 +42,11 @@ const countdown = ref(90);
 const isTimeUp = ref(false);
 let timer: NodeJS.Timeout | null = null;
 
+const authStore = useAuthStore();
+const user = authStore.user;
+
+const removedFromSession = ref(false);
+
 const handleVote = (songIndex: number) => {
   if (selectedVote.value === songIndex) {
     selectedVote.value = null;
@@ -39,6 +54,16 @@ const handleVote = (songIndex: number) => {
     selectedVote.value = songIndex;
   }
   console.log(`Voted for song ${songList.value[songIndex].title}`);
+};
+
+const handleSessionMessages = (sessionMessage) => {
+  switch (sessionMessage.type) {
+    case SessionMessageType.GUEST_REMOVED:
+      removedFromSession.value = true;
+      break;
+    default:
+      break;
+  }
 };
 
 // Countdown logic
@@ -57,6 +82,9 @@ onMounted(() => {
       clearInterval(timer);
     }
   }, 1000);
+
+  sessionSocket.connect(props.sessionId, handleSessionMessages);
+
 });
 
 onUnmounted(() => {
@@ -67,7 +95,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="mobile-visualization">
+  <div v-if="removedFromSession">
+    You were removed from this session.
+  </div>
+  <div class="mobile-visualization" v-else>
     <div class="sticky-header">
       <h2 class="header">Vote for the next song!</h2>
       <p class="countdown">Time remaining: {{ countdown }}s</p>

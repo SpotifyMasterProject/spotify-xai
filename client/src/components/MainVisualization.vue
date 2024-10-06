@@ -266,6 +266,7 @@ const onPetalClick = (index: number, featureCategory: SongFeatureCategory) => {
             />
           </div>
             <Recommendations
+              v-if="session.isRunning"
               :sessionId="session.id"
               :key="flowerData.length"
               class="recommendations"
