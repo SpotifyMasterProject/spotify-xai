@@ -233,13 +233,10 @@ onMounted(() => {
 });
 
 const currentSelectedFeature = ref(null);
-const showFeaturesInformation = ref(false);
-const onPetalClick = (index: number, featureCategory: SongFeatureCategory) => {
-  currentSelectedFeature.value = {
-    index,
-    featureCategory
-  };
-  showFeaturesInformation.value = true;
+const emit = defineEmits(['flowerSelected']);
+const onPetalClick = (index: number) => {
+  currentSelectedFeature.value = {index};
+  emit('flowerSelected', index);
 };
 </script>
 
@@ -262,7 +259,7 @@ const onPetalClick = (index: number, featureCategory: SongFeatureCategory) => {
             <Flower
                 :features="flower"
                 :circleRadius="40"
-                @onPetalClick="(featureCategory) => onPetalClick(index, featureCategory)"
+                @onPetalClick="() => onPetalClick(index)"
             />
           </div>
             <Recommendations
@@ -275,11 +272,6 @@ const onPetalClick = (index: number, featureCategory: SongFeatureCategory) => {
         </div>
       </div>
     </div>
-    <SongFeatureDialog
-      v-model:visible="showFeaturesInformation"
-      :flowerData="flowerData"
-      :currentSelectedFeature="currentSelectedFeature"
-    />
   </div>
 </template>
 

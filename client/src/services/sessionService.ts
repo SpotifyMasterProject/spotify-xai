@@ -32,7 +32,7 @@ export const sessionService = {
         })
     },
     async getRecommendations(sessionId: string): Promise<Song[]> {
-        return apiClient.get(`/sessions/${sessionId}/recommendations`).then((response) => {
+        return apiClient.patch(`/sessions/${sessionId}/recommendations`).then((response) => {
             return response.data['songs'];
         })
     },
