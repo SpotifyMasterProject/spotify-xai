@@ -2,7 +2,7 @@ from databases import Database
 from databases.interfaces import Record
 from fastapi import HTTPException, status
 from redis.asyncio import Redis
-from sqlalchemy import Column, Table, MetaData, Integer, String, ARRAY, Float, Date, insert, select
+from sqlalchemy import Column, Table, MetaData, Integer, String, ARRAY, Float, Date, insert, select, func
 from typing import Optional
 
 from models.session import Session
@@ -81,8 +81,13 @@ class Repository:
         return result
 
     async def get_songs_by_pattern(self, pattern: str, limit: int) -> list[Record]:
-        query = select(songs).where(songs.c.track_name.ilike(f'%{pattern}%') | songs.c.artists.any(pattern)).limit(limit)
-        result = await self.postgres.fetch_all(query)
+        regex_pattern = f'\\m{pattern}'
+
+        query = select(songs).where(
+            songs.c.track_name.op('~*')(regex_pattern) |
+            func.array_to_string(songs.c.artists, ' ').op('~*')(regex_pattern)
+        ).limit(limit)
+        result = await self.postgres.fetch_all(query, {'pattern': f'%{pattern}%'})
         if result is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No matching songs found")
         return result

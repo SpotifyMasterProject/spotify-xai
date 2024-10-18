@@ -172,8 +172,38 @@ class Service:
 
     async def add_song_to_database(self, song_id: str) -> Song:
         song_info = self.spotify_api_client.track(song_id)
-        await self.repo.add_song_by_info(song_info)
-        return Song(**song_info)
+        audio_features = self.spotify_api_client.audio_features(song_id)[0]
+        combined_info = {**song_info, **audio_features}
+
+        album_info = combined_info.get('album', {})
+        artists_info = combined_info.get('artists', [])
+        release_date_str = album_info.get('release_date')
+        release_date = None
+        if release_date_str:
+            try:
+                release_date = datetime.strptime(release_date_str, "%Y-%m-%d").date()
+            except ValueError:
+                release_date = None
+
+        filtered_song_info = {
+            "id": str(combined_info.get('id', '')),
+            "track_name": str(combined_info.get('name', '')),
+            "album": str(album_info.get('name', '')),
+            "album_id": str(album_info.get('id', '')),
+            "artists": [str(artist['name']) for artist in artists_info],
+            "artist_ids": [str(artist['id']) for artist in artists_info],
+            "danceability": float(combined_info.get('danceability', 0.0)),
+            "energy": float(combined_info.get('energy', 0.0)),
+            "speechiness": float(combined_info.get('speechiness', 0.0)),
+            "valence": float(combined_info.get('valence', 0.0)),
+            "tempo": float(combined_info.get('tempo', 0.0)),
+            "duration_ms": int(combined_info.get('duration_ms', 0)),
+            "release_date": release_date,
+            "popularity": float(combined_info.get('popularity', 0.0))
+        }
+
+        await self.repo.add_song_by_info(filtered_song_info)
+        return Song(**filtered_song_info)
 
     # async def delete_song_from_database(self, song_id: str) -> None:
     #     await self.repo.delete_song_by_id(song_id)
