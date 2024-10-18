@@ -1,6 +1,7 @@
 from pydantic import model_validator
 from datetime import datetime
 from typing import Optional
+from .user import User
 from .camel_model import CamelModel
 
 # Approximate values for maximum and minimum values of tempo.
@@ -25,6 +26,7 @@ class Song(CamelModel):
     duration_ms: Optional[int] = None
     release_date: Optional[datetime] = None
     popularity: Optional[float] = None
+    added_by: Optional[User] = None
 
     @model_validator(mode='after')
     def set_scaled_tempo(self) -> 'Song':

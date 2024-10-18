@@ -186,10 +186,12 @@ class Service:
 
     @with_session_lock
     async def add_song_to_session(self, user_id: str, session_id: str, song_id: str) -> Playlist:
+        user = await self.get_user(user_id)
         session = await self.get_session(session_id)
-        if user_id not in session.guests and user_id != session.host_id:
+        if user.id not in session.guests and user.id != session.host_id:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User is not part of session")
         song = await self.get_song(song_id)
+        song.added_by = user
 
         session.playlist.queued_songs.append(song)
         await self.repo.set_session(session)
