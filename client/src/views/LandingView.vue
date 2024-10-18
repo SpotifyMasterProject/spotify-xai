@@ -8,7 +8,6 @@ import { useAuthStore } from '@/stores/auth';
 import { sessionService } from '@/services/sessionService';
 import LogoIntroScreen from "@/components/LogoIntroScreen.vue";
 import StartBlendButton from "@/components/StartBlendButton.vue";
-import Navigation from "@/components/Navigation.vue";
 import StartScreen from '@/components/StartScreen.vue';
 import { isMobile } from "@/services/layoutService";
 
@@ -69,9 +68,6 @@ const joinSession = async (sessionId) => {
       <div class="type1" v-else>
         <header>
           <LogoIntroScreen/>
-          <nav>
-            <Navigation />
-          </nav>
         </header>
         <div class="login-container">
           <Button v-if="

@@ -52,11 +52,11 @@ const chartOptions = {
 };
 
 const colorPalettes = {
-  [SongFeatureCategory.DANCEABILITY]: ['#25606C'],
-  [SongFeatureCategory.ENERGY]: ['#4D6730'],
+  [SongFeatureCategory.DANCEABILITY]: ['#A1DBE8'],
+  [SongFeatureCategory.ENERGY]: ['#8AB15F'],
   [SongFeatureCategory.SPEECHINESS]: ['#DED9BA'],
-  [SongFeatureCategory.TEMPO]: ['#BC6C26'],
-  [SongFeatureCategory.VALENCE]: ['#A65FDD'],
+  [SongFeatureCategory.TEMPO]: ['#F99945'],
+  [SongFeatureCategory.VALENCE]: ['#E3CAF7'],
 };
 
 const chartData = (songFeatureCategory: SongFeatureCategory | null) => {

@@ -7,17 +7,17 @@
 
   --font-color: #FFFFFF;
   --font-color-soft: #848484;
-  --audio-color1: #144550;
-  --audio-color2: #31431E;
-  --audio-color3: #EEE8C4;
-  --audio-color4: #E4832E;
-  --audio-color5: #BB7DEC;
+  --audio-color1: #A1DBE8;
+  --audio-color2: #8AB15F;
+  --audio-color3: #DED9BA;
+  --audio-color4: #F99945;
+  --audio-color5: #E3CAF7;
 
-  --tempo-color: #BC6C26;
-  --valence-color: #A65FDD;
+  --tempo-color: #F99945;
+  --valence-color: #E3CAF7;
   --speechiness-color: #DED9BA;
-  --energy-color: #4D6730;
-  --danceability-color: #25606C;
+  --energy-color: #8AB15F;
+  --danceability-color: #A1DBE8;
 
   --button-disabled-font-color: #c4c4c4;
 

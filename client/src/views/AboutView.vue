@@ -4,7 +4,6 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import {authService} from '@/services/authService'
 import LogoIntroScreen from "@/components/LogoIntroScreen.vue";
-import Navigation from "@/components/Navigation.vue";
 
 const username = ref<string>('')
 
@@ -48,9 +47,6 @@ const authorize = function () {
   <div class="type1">
     <header>
       <logo-intro-screen/>
-      <nav>
-        <Navigation/>
-      </nav>
     </header>
     <div class="container">
       <start-blend-button />
