@@ -11,6 +11,8 @@ export class Song {
     scaledTempo: number
     releaseDate: string
     popularity: number
+    durationMs: number
+    genre: string
 
     constructor(data: Song) {
         this.id = data.id
@@ -25,5 +27,7 @@ export class Song {
         this.scaledTempo = data.scaledTempo
         this.releaseDate = data.releaseDate
         this.popularity = data.popularity
+        this.durationMs = data.durationMs
+        this.genre = data.genre
     }
 }

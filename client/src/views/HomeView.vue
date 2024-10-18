@@ -24,15 +24,13 @@ import {SongFeatureCategory} from "@/types/SongFeature";
 const showSongFeatureDialog = ref(false);
 const showAddMoreSongPopup = ref(false);
 
-const showSongDetailPopup = ref(false);
-const selectedSong = ref(null);
-
 const showVisualizationAid = ref(false);
 
 const LOCAL_IP_ADDRESS = import.meta.env.VITE_LOCAL_IP_ADDRESS;
 
 const toggleVisibility = () => {
   showSongFeatureDialog.value = !showSongFeatureDialog.value;
+  selectedFeature.value = null;
 };
 
 
@@ -75,6 +73,9 @@ const runningSession = ref();
 const startSession = async (newSession) => {
   await sessionStore.createSession(newSession);
   createNewSessionFlow.value = false;
+  selectedSessionIndex.value = 0;
+
+  showVisualizationAid.value = true;
 };
 
 //Information Button to read more about how the visualization can be read
@@ -106,12 +107,12 @@ const flowerData = computed(() => {
   }
   return [];
 });
-const currentSelectedFeature = ref({ index: 2, featureCategory: 'ALL' });
 
-const selectedFlowerIndex = ref(null);
-function handleFlowerSelected(index) {
-  console.log("flower index received", index)
-  selectedFlowerIndex.value = index;
+const selectedFeature = ref(null);
+function handleFlowerSelected(index, featureCategory) {
+  console.log("flower index received", index, featureCategory)
+  selectedFeature.value = {index, featureCategory};
+  showSongFeatureDialog.value = true;
 }
 </script>
 
@@ -159,7 +160,7 @@ function handleFlowerSelected(index) {
         <div v-show="showSongFeatureDialog" class="song-feature">
           <SongFeatureDialog
               :flowerData="flowerData"
-              :selectedFlowerIndex="selectedFlowerIndex"
+              :selectedFeature="selectedFeature"
           />
         </div>
       </div>
