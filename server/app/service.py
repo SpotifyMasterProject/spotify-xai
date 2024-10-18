@@ -215,9 +215,18 @@ class Service:
         session = await self.get_session(session_id)
         session.recommendations.clear()
         await self.repo.set_session(session)
-        result = await self.repo.get_recommendations_by_song_id(session.playlist.get_all_songs(), limit)
-        songs = [await self.get_song_from_database(row['id']) for row in result]
-        for song in songs:
+        result = await self.repo.get_recommendations_by_songs(session.playlist.get_all_songs(), limit)
+        for row in result:
+            song = await self.get_song_from_database(row['id'])
+            diffs = {
+                'danceability': row['diff_danceability'],
+                'energy': row['diff_energy'],
+                'speechiness': row['diff_speechiness'],
+                'valence': row['diff_valence'],
+                'tempo': row['diff_tempo']
+            }
+            most_significant_feature = max(diffs, key=diffs.get)
+            song.most_significant_feature = most_significant_feature
             session.recommendations.append(Recommendation(**song.model_dump()))
         await self.repo.set_session(session)
         await self.manager.publish(channel=f"recommendations:{session_id}", message=RecommendationList(recommendations=session.recommendations))

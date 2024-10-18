@@ -91,7 +91,7 @@ class Repository:
     #     query = delete(songs).where(songs.c.id == song_id)
     #     await self.postgres.execute(query)
 
-    async def get_recommendations_by_song_id(self, playlist: list[Song], limit: int = 3) -> list[Record]:
+    async def get_recommendations_by_songs(self, playlist: list[Song], limit: int = 3) -> list[Record]:
         if not playlist:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Playlist is empty")
 
@@ -113,23 +113,39 @@ class Repository:
                     AVG(s.energy) AS avg_energy,
                     AVG(s.speechiness) AS avg_speechiness,
                     AVG(s.valence) AS avg_valence,
-                    AVG((s.tempo - ts.min_tempo) / (ts.max_tempo - ts.min_tempo)) AS avg_tempo  -- Normalize tempo
+                    AVG(
+                        LEAST(GREATEST((s.tempo - ts.min_tempo) / (ts.max_tempo - ts.min_tempo), 0), 1)
+                    ) AS avg_tempo  -- normalize tempo
                 FROM songs s, tempo_stats ts
                 WHERE id = ANY(:song_ids)  -- match multiple song IDs
             ),
             song_distances AS (
-                -- calculate cosine distance between the averaged vector and each song
+                -- calculate cosine distance and individual feature differences
                 SELECT 
                     s.id,
+                    ABS(s.danceability - t.avg_danceability) AS diff_danceability,
+                    ABS(s.energy - t.avg_energy) AS diff_energy,
+                    ABS(s.speechiness - t.avg_speechiness) AS diff_speechiness,
+                    ABS(s.valence - t.avg_valence) AS diff_valence,
+                    ABS(
+                        LEAST(GREATEST((s.tempo - ts.min_tempo) / (ts.max_tempo - ts.min_tempo), 0), 1) - t.avg_tempo
+                    ) AS diff_tempo,
                     cube_distance(
-                        cube(array[s.danceability, s.energy, s.speechiness, s.valence, (s.tempo - ts.min_tempo) / (ts.max_tempo - ts.min_tempo)]),
+                        cube(array[
+                                s.danceability,
+                                s.energy,
+                                s.speechiness,
+                                s.valence,
+                                LEAST(GREATEST((s.tempo - ts.min_tempo) / (ts.max_tempo - ts.min_tempo), 0), 1)
+                        ]),
                         cube(array[t.avg_danceability, t.avg_energy, t.avg_speechiness, t.avg_valence, t.avg_tempo])
                     ) AS cosine_distance
                 FROM songs s, target_songs t, tempo_stats ts
                 WHERE s.id != ALL(:song_ids)  -- exclude the target songs
             )
-            -- return the 3 closest songs
-            SELECT * FROM song_distances
+            -- return the 3 closest songs and the feature differences
+            SELECT id, diff_danceability, diff_energy, diff_speechiness, diff_valence, diff_tempo, cosine_distance
+            FROM song_distances
             ORDER BY cosine_distance
             LIMIT :limit;
         """
