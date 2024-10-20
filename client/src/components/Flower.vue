@@ -9,7 +9,7 @@ const props = defineProps<{
   circleRadius?: number;
 }>();
 
-const emit = defineEmits(['onPetalClick']);
+const emit = defineEmits(['onPetalClick', 'hover', 'leave']);
 
 const size = props.size ?? 80;
 const circleRadius = props.circleRadius ?? 40;
@@ -28,7 +28,14 @@ const rotation = computed(() => {
 </script>
 
 <template>
-  <svg :width="maxPetalLength * 2" :height="maxPetalLength * 2" :viewBox="`0 0 ${maxPetalLength * 2} ${maxPetalLength * 2}`" :style="{ transform: `rotate(${rotation}deg)` }">
+  <svg
+      :width="maxPetalLength * 2"
+      :height="maxPetalLength * 2"
+      :viewBox="`0 0 ${maxPetalLength * 2} ${maxPetalLength * 2}`"
+      :style="{ transform: `rotate(${rotation}deg)` }"
+      @mouseenter="() => emit('hover')"
+      @mouseleave="() => emit('leave')"
+  >
     <circle :cx="maxPetalLength" :cy="maxPetalLength" :r="circleRadius" fill="none" stroke="#CCCCCC" stroke-width="1" />
     <Petal
         class="petal"
