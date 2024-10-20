@@ -2,7 +2,6 @@
 import {onBeforeUnmount, onMounted, ref} from 'vue'
 import WebsocketService from '@/services/websocketService'
 import LogoIntroScreen from "@/components/LogoIntroScreen.vue";
-import Navigation from "@/components/Navigation.vue";
 
 const receivedMessages = ref<string[]>([])
 const wsService = new WebsocketService()
@@ -24,9 +23,6 @@ onBeforeUnmount(() => {
   <div class="type1">
     <header>
       <logo-intro-screen/>
-      <nav>
-        <Navigation/>
-      </nav>
     </header>
     <div class = type2>
       <h1>WebSocket Example</h1>

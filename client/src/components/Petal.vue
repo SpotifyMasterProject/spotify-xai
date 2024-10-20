@@ -11,11 +11,11 @@ const props = defineProps<{
 const rotation = computed(() => ((props.feature.category ?? 0) * 360 / 5));
 
 const colorPalettes = {
-  [SongFeatureCategory.DANCEABILITY]: ['#0F3740', '#144550', '#194E59', '#1D5864', '#25606C'],
-  [SongFeatureCategory.ENERGY]: ['#283618', '#31431E', '#3C5125', '#4D6730', '#597738'],
+  [SongFeatureCategory.DANCEABILITY]: ['#A1DBE8', '#A1DBE8', '#A1DBE8', '#A1DBE8', '#A1DBE8'],
+  [SongFeatureCategory.ENERGY]: ['#8AB15F', '#8AB15F', '#8AB15F', '#8AB15F', '#8AB15F'],
   [SongFeatureCategory.SPEECHINESS]: ['#DED9BA', '#EEE8C4', '#F4EEC8', '#F8F2CD', '#FEFAE1'],
-  [SongFeatureCategory.TEMPO]: ['#BC6C26', '#CD762A', '#E4832E', '#F38E36', '#F99945'],
-  [SongFeatureCategory.VALENCE]: ['#A65FDD', '#B36DEA', '#BB7DEC', '#C093E4', '#CCA9E9'],
+  [SongFeatureCategory.TEMPO]: ['#F99945', '#F99945', '#F99945', '#F99945', '#F99945'],
+  [SongFeatureCategory.VALENCE]: ['#E3CAF7', '#E3CAF7', '#E3CAF7', '#E3CAF7', '#E3CAF7'],
 } as const; // This makes the object keys and values readonly
 
 const calculateEllipseArea = (width: number, height: number) => {
