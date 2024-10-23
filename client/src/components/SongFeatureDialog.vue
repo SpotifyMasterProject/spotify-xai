@@ -1,5 +1,5 @@
 <script setup lang ="ts">
-import { ref, onMounted, computed } from 'vue';
+import { onMounted, computed } from 'vue';
 import { SongFeatureCategory, SongFeature } from '@/types/SongFeature';
 import Dialog from 'primevue/dialog';
 import Tabs from 'primevue/tabs';
@@ -14,19 +14,10 @@ ChartJS.register(...registerables);
 
 const props = defineProps<{
   flowerData: SongFeature[][],
-  selectedFlowerIndex: number | null,
+  selectedFeature: { index: number, featureCategory: SongFeatureCategory } | null,
 }>();
 
 const datasetLength = computed(() => props.flowerData.length);
-const bufferLength = computed(() => {
-  if (datasetLength.value <= 5) {
-    return 0.3;
-  } else if (datasetLength.value >= 9) {
-    return 1;
-  } else {
-    return 0.5;
-  }
-});
 
 // TODO: Adjust scale for TEMPO.
 const chartOptions = {
@@ -81,6 +72,7 @@ const chartData = (songFeatureCategory: SongFeatureCategory | null) => {
         fill: false,
         borderColor: colorPalettes[category],
         backgroundColor: colorPalettes[category],
+        pointRadius: pointRadius,
         tension: 0.4
       };
     });
@@ -90,8 +82,11 @@ const chartData = (songFeatureCategory: SongFeatureCategory | null) => {
       datasets: datasets
     };
   } else {
-    pointColors[props.selectedFlowerIndex] = colorPalettes[songFeatureCategory][0];
-    pointRadius[props.selectedFlowerIndex] = 9;
+    if (props.selectedFeature !== null) {
+      pointColors[props.selectedFeature.index] = colorPalettes[songFeatureCategory][0];
+      pointRadius[props.selectedFeature.index] = 9;
+    }
+
     // generate for a specific feature
     return {
       labels: Array.from({length: props.flowerData.length}, (_, i) => i + 1),
@@ -125,6 +120,11 @@ const chartOptionsAllFeatures = {
       drawLegend: true
       },
   },
+  layout: {
+    padding: {
+      right: 120,
+    }
+  },
   scales: {
     x: {
       type: 'linear',
@@ -134,7 +134,7 @@ const chartOptionsAllFeatures = {
         stepSize: 1,
       },
       min: 1,
-      max: (context) => context.chart.data.labels.length + bufferLength.value,  // Add subtle space on the right
+      max: (context) => context.chart.data.labels.length,  // Add subtle space on the right
     },
     y: {
       min: 0,
@@ -145,6 +145,15 @@ const chartOptionsAllFeatures = {
     }
   }
 };
+
+const currentFeature = computed(() => {
+  if (props.selectedFeature === null) {
+    return 'ALL';
+  } else {
+    return props.selectedFeature.featureCategory;
+  }
+});
+
 
 
 // customize the legend
@@ -238,7 +247,7 @@ onMounted(() => {
 
 <template>
   <div>
-    <Tabs :value="'ALL'" :unstyled="false">
+    <Tabs :value="currentFeature" :unstyled="false">
       <TabList :unstyled="false" class="tabs">
           <Tab :value="'ALL'" :unstyled="false" class="all">All Features</Tab>
           <Tab :value="SongFeatureCategory.TEMPO" :unstyled="false" class="tempo">Tempo (BPM)</Tab>

@@ -130,6 +130,7 @@ a,
   top: 10px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  z-index: 1010;
 }
 .type2 .info-box.active {
   background-color: #6BA149;
